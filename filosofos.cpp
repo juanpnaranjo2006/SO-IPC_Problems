@@ -1,9 +1,10 @@
 #include <iostream>
-#include <phtread.h>
+#include <pthread.h>
 #include <unistd.h>
+
 using namespace std;
 #define NUM_FILOSOFOS 5
-phtread_mutex_t tenedores[NUM_FILOSOFOS]; //un mutex por cada tenedor   
+pthread_mutex_t tenedores[NUM_FILOSOFOS]; //un mutex por cada tenedor
 
 void* filosofo(void* arg){
     int id = *(int*)arg;
@@ -14,24 +15,24 @@ void* filosofo(void* arg){
         //intenta tomar tenedores
         cout << "Filosofo " << id << " intenta tomar los tenedores." << endl;
         //tomar el de la izquierda
-        phtread_mutex_lock(&tenedores[id]);
+        pthread_mutex_lock(&tenedores[id]);
         cout << "Filosofo " << id << " tomo el tenedor izquierdo." << endl;
         //tomar el tenededor de la izquierda
-        phtread_mutex_lock(&tenedores[(id+1) % NUM_FILOSOFOS]);
+        pthread_mutex_lock(&tenedores[(id+1) % NUM_FILOSOFOS]);
         cout << "Filosofos " << id << " tomo el tenedor derecho." << endl;
         //Comiendo
         cout << "Filosofo " << id << "esta comiendo..." << endl;
         sleep(rand() % 3 + 1);//simular tiempo de comer
         //soltar tenedores
-        phtread_mutex_lock(&tenedores[(id + 1) % NUM_FILOSOFOS])
-        phtread_mutex_lock(&tenedores[id])
+        pthread_mutex_lock(&tenedores[(id + 1) % NUM_FILOSOFOS]);
+        pthread_mutex_lock(&tenedores[id]);
         cout << "Filosfo "<< id << "solto ambos tenedores." << endl;
     }
     return nullptr;
 }
 
 int main(){
-    phtread_t filosofos[NUM_FILOSOFOS];
+    pthread_t filosofos[NUM_FILOSOFOS];
     int id[NUM_FILOSOFOS];
     //inicializar el estado de los tenedores a libre (false)
     for (int i = 0; i < NUM_FILOSOFOS; i++){
@@ -40,11 +41,11 @@ int main(){
     }
     //crear hilo para cada filosofo
     for(int i = 0; i < NUM_FILOSOFOS; i++){
-        phtread_create(&filosofos[i],nullptr,filosofo, &id[i]);
+        pthread_create(&filosofos[i],nullptr,filosofo, &id[i]);
     }
 
     for(int i = 0; i < NUM_FILOSOFOS; i++){
-        phtread_join(filosfos[i],nullptr);|
+        pthread_join(filosfos[i],nullptr);
     }
     return 0;
 }
